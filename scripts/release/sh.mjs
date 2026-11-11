@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 
-export const sh = (cmd, args) => execFileSync(cmd, args, { encoding: 'utf8' }).trim();
+export const sh = (cmd, args) => execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 
 export const trySh = (cmd, args) => {
   try {
