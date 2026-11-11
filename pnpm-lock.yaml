@@ -1,0 +1,19 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  packages/core: {}
+
+  packages/internal: {}
+
+  packages/react:
+    dependencies:
+      '@luca-gr4vy/release-poc':
+        specifier: workspace:^
+        version: link:../core

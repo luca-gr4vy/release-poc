@@ -1,0 +1,8 @@
+{
+  "name": "release-poc",
+  "private": true,
+  "packageManager": "pnpm@11.28.9",
+  "scripts": {
+    "test": "node --test 'scripts/**/*.test.mjs'"
+  }
+}
