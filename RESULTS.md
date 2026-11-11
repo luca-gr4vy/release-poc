@@ -80,3 +80,16 @@ PRs #3 (`minor`), #4 and #5 (patch) were merged at 16:12:57, 16:13:00 and 16:13:
   - The repo owner's tag create via the API was blocked: `422 Reference update failed`.
   - `GITHUB_TOKEN` was blocked too (run 43058121643). The claim failed before staging, so nothing was staged and no version was used. The error was unclear (a 404 from the follow-up lookup); `stage.mjs` now says the tag was blocked.
   - After deleting the ruleset, "re-run failed jobs" released 0.2.5 cleanly. **A failed claim is recoverable.**
+
+## C: prerelease, approval order, reject (2026-11-11)
+
+- **Prerelease** (`workflow_dispatch`, `bump=minor`, `prerelease=true`, run 32): staged `0.3.0-next.32` with `--tag next`, and created no `v*` tag. After approval (16:35Z): `dist-tags = { latest: 0.1.0, next: 0.3.0-next.32 }`. **The staged dist-tag survives approval, and `latest` is untouched.**
+- **Approving the newest version first:** approving 0.2.5 (16:36Z) gave `latest: 0.2.5`. react depends on `^0.2.5`.
+- **⚠ Approving an older staged version afterwards moves `latest` back.** Approving 0.2.0 (16:37Z) gave `latest: 0.2.0` on both packages, so `npm install` served older code than was already published. The user repaired it with `npm dist-tag add <pkg>@0.2.5 latest` (web 2FA prompt).
+  - This applies to every option.
+  - Needs a rule: approve only the newest staged version, and reject the older ones.
+  - Could also use a guard, e.g. stage older versions under a non-`latest` tag, or have the PR comment warn when a newer version is staged.
+- **Reject:** after rejecting 0.2.1 in the npmjs.com UI, it's gone from `pnpm stage list` and isn't public. Not tested: whether 0.2.1 can be staged again. The page says it's used up.
+- **Still staged:**
+  - 0.1.1 is the expiry check (look again 2026-11-18 and 2026-11-25).
+  - 0.2.2–0.2.4 were left on purpose.
