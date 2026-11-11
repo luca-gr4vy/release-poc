@@ -43,7 +43,7 @@ const message = [
   '',
   ...PACKAGES.map((p) => `- \`${p.name}@${version}\``),
   '',
-  'An npm owner approves each with 2FA: `pnpm stage list <package>`, then `pnpm stage approve` (or on npmjs.com).',
+  'An npm owner approves each on npmjs.com with 2FA, under the package\'s staged versions. Check the scan has finished first: `pnpm stage list <package>` shows `status: staged`, not `validating`.',
 ].join('\n');
 summary(message);
 if (pr) sh('gh', ['pr', 'comment', String(pr), '-R', repo, '--body', message]);
