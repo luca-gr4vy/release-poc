@@ -12,7 +12,8 @@ const tagName = `v${version}`;
 if (tag) {
   const created = trySh('gh', ['api', '-X', 'POST', `repos/${repo}/git/refs`, '-f', `ref=refs/tags/${tagName}`, '-f', `sha=${sha}`]);
   if (created === null) {
-    const owner = sh('gh', ['api', `repos/${repo}/git/ref/tags/${tagName}`, '--jq', '.object.sha']);
+    const owner = trySh('gh', ['api', `repos/${repo}/git/ref/tags/${tagName}`, '--jq', '.object.sha']);
+    if (owner === null) throw new Error(`Could not create ${tagName} and it doesn't exist: blocked by a tag ruleset or missing contents: write?`);
     if (owner !== sha) throw new Error(`${tagName} is already claimed by ${owner}, not ${sha}`);
     console.log(`${tagName} already claimed by this commit, resuming`);
   }

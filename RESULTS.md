@@ -64,3 +64,19 @@ PRs #3 (`minor`), #4 and #5 (patch) were merged at 16:12:57, 16:13:00 and 16:13:
 - **Deploy-gate risk confirmed.** While run 2 was pending, its merge commit had `check-runs total_count: 0`, and `/status` gave `pending` with 0 statuses. No job had started, so no checks existed yet. Any gate that only waits on checks that already exist would pass this commit before its CI runs. Next step: check how Cloud Build `github_checks` treats zero checks.
 - Releasing 3 merges took 4m06s, from first merge to last stage. Each queued run waits for the previous one's whole pipeline (about 1m15s each here).
 - **Changelog with an unapproved version in between.** Each tarball builds on the latest *public* version (0.1.0). So 0.2.2's CHANGELOG puts #2–#5 in a single `0.2.2` section above the `0.1.0` history, and 0.1.1/0.2.0/0.2.1 get no sections of their own. That's correct if only the newest version is approved. If several are approved in order, their tarballs were built before any approval, so the history between them is folded together.
+
+## C: labels and "release now" (2026-11-11)
+
+- **Label added after merge** (PR #6). The push run logged `No release: PR #6 has no release label`. Adding `release` afterwards started no run, because labelling isn't a trigger here.
+- **"Release now"** (`workflow_dispatch`, `bump=patch`) then shipped that change as 0.2.3 with `pr: null`. The approval steps went to the job summary.
+- **Label added while CI runs** (PR #7). Merged at 16:20:53, labelled at 16:21:00; `release-pack` started at 16:21:18 and released 0.2.4. Labels are read when `release-pack` starts, not at merge. A label added while `ci`/`scan` are still running counts.
+- **"Release now" with nothing new.** After a README-only merge, the dispatch logged `No release: nothing changed in published packages since v0.2.4`.
+
+## C: `v*` tag ruleset (2026-11-11)
+
+- **Personal repos can't use the bypass we want.** A repo ruleset with the GitHub Actions app (id 15368) as bypass actor is rejected: `422 Actor GitHub Actions integration must be part of the ruleset source or owner organization`. So the intended setup ("only Actions may create `v*`") can only be tested in an org. Owner: Org Admin.
+- **Mistake during the test.** Because that ruleset wasn't created, two probe tags (`v9.9.9`, `v9.9.8`) were actually created. They were deleted within a minute, before any release ran. Lesson: a stray high `v*` tag would push C's next version to 9.9.10, because C bases versions on the highest tag. In the real repo, a tag ruleset protects against this.
+- **Ruleset with no bypass:**
+  - The repo owner's tag create via the API was blocked: `422 Reference update failed`.
+  - `GITHUB_TOKEN` was blocked too (run 43058121643). The claim failed before staging, so nothing was staged and no version was used. The error was unclear (a 404 from the follow-up lookup); `stage.mjs` now says the tag was blocked.
+  - After deleting the ruleset, "re-run failed jobs" released 0.2.5 cleanly. **A failed claim is recoverable.**
