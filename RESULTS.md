@@ -41,3 +41,11 @@ Findings:
 - **The approved version's `_npmUser` is "GitHub Actions"**, not the approver.
 - **Provenance was attached anyway:** an SLSA v1 provenance attestation plus npm's publish attestation, despite `npm_config_provenance=false`. pnpm or npm seems to add provenance automatically for trusted publishing from a public repo. The private target repo can't produce provenance, so this doesn't carry over.
 - After approval, `pnpm stage list` shows nothing staged.
+
+## C: re-runs (2026-11-11)
+
+- **Re-run of a released commit.** Run 43053893058, attempt 2: `No release: v0.1.0 is already released at HEAD`. No new tag, `release-stage` skipped.
+- **Re-staging a staged version.** 0.1.1 was staged (run 43055078419, PR #2, not approved), then only `release-stage` was re-run. The tag claim resumed (`v0.1.1 already claimed by this commit, resuming`). npm refused the stage after 10 s:
+  `[E409] 409 Conflict - POST https://registry.npmjs.org/-/stage/package/@luca-gr4vy%2frelease-poc - Cannot stage previously published version "0.1.1".`
+  - The message says "previously published", not "already staged", even though 0.1.1 was never public. The script was matching `/already/` and failed. It now matches `E409|previously published`.
+  - **A re-run uses the scripts from the original commit**, so a fix to a release script only applies from the next merge. That attempt stays red.

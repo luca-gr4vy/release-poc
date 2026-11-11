@@ -26,7 +26,8 @@ for (const tgz of tarballs) {
   const output = `${res.stdout}${res.stderr}`;
   console.log(`--- pnpm stage publish ${tgz} (exit ${res.status}, ${Date.now() - started} ms)\n${output}`);
   if (res.status !== 0) {
-    if (!/already/i.test(output)) throw new Error(`Staging ${tgz} failed`);
+    // npm answers a re-stage with: [E409] 409 Conflict … Cannot stage previously published version "X"
+    if (!/E409|previously published/i.test(output)) throw new Error(`Staging ${tgz} failed`);
     console.log(`::notice::${tgz} was already staged; treating as success`);
   }
 }
