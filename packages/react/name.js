@@ -1,1 +1,1 @@
-export const name = "react";
+export const name = "release-poc-react";
