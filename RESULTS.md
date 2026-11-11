@@ -49,3 +49,18 @@ Findings:
   `[E409] 409 Conflict - POST https://registry.npmjs.org/-/stage/package/@luca-gr4vy%2frelease-poc - Cannot stage previously published version "0.1.1".`
   - The message says "previously published", not "already staged", even though 0.1.1 was never public. The script was matching `/already/` and failed. It now matches `E409|previously published`.
   - **A re-run uses the scripts from the original commit**, so a fix to a release script only applies from the next merge. That attempt stays red.
+
+## C: three labelled merges back to back (2026-11-11)
+
+PRs #3 (`minor`), #4 and #5 (patch) were merged at 16:12:57, 16:13:00 and 16:13:03. 0.1.1 was still staged and unapproved.
+
+| Run | PR | Waited in queue | Version | Done |
+| --- | --- | --- | --- | --- |
+| 43056079482 | #3 | – | 0.2.0 | 16:14:19 |
+| 43056086368 | #4 | until 16:14:22 | 0.2.1 | 16:15:31 |
+| 43056095438 | #5 | until 16:15:34 | 0.2.2 | 16:17:03 |
+
+- Workflow-level `concurrency` with `queue: max` kept all three runs. None was cancelled, and each saw the previous run's tag.
+- **Deploy-gate risk confirmed.** While run 2 was pending, its merge commit had `check-runs total_count: 0`, and `/status` gave `pending` with 0 statuses. No job had started, so no checks existed yet. Any gate that only waits on checks that already exist would pass this commit before its CI runs. Next step: check how Cloud Build `github_checks` treats zero checks.
+- Releasing 3 merges took 4m06s, from first merge to last stage. Each queued run waits for the previous one's whole pipeline (about 1m15s each here).
+- **Changelog with an unapproved version in between.** Each tarball builds on the latest *public* version (0.1.0). So 0.2.2's CHANGELOG puts #2–#5 in a single `0.2.2` section above the `0.1.0` history, and 0.1.1/0.2.0/0.2.1 get no sections of their own. That's correct if only the newest version is approved. If several are approved in order, their tarballs were built before any approval, so the history between them is folded together.
