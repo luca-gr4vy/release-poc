@@ -54,7 +54,7 @@ jobs:
         run: |
           npm version "0.0.0-prtest.$GITHUB_RUN_ID" --no-git-tag-version
           pnpm pack --pack-destination /tmp/prtest
-          pnpm stage publish /tmp/prtest/*.tgz --tag prtest
+          pnpm stage publish /tmp/prtest/*.tgz --tag prtest --no-git-checks
 
   pr-token-env:
     if: github.event_name == 'pull_request'
