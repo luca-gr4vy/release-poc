@@ -27,6 +27,45 @@ concurrency:
   queue: max
 
 jobs:
+  # TEST ONLY (do not merge): what can a same-repo PR do with its own tokens?
+  pr-token-release:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: 1. Tag + GitHub Release with GITHUB_TOKEN
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: gh release create "pr-token-test-$GITHUB_RUN_ID" --target "$SHA" --prerelease --title "PR token test" --notes "test, delete me" -R "$GITHUB_REPOSITORY"
+      - name: 2. Stage to npm over OIDC, no environment
+        continue-on-error: true
+        working-directory: packages/core
+        run: |
+          npm version "0.0.0-prtest.$GITHUB_RUN_ID" --no-git-tag-version
+          pnpm pack --pack-destination /tmp/prtest
+          pnpm stage publish /tmp/prtest/*.tgz --tag prtest
+
+  pr-token-env:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - name: 3. Entered the release environment from a PR
+        run: echo "job started inside release env"
+
   ci:
     runs-on: ubuntu-latest
     steps:
