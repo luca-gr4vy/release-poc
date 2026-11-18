@@ -91,5 +91,5 @@ PRs #3 (`minor`), #4 and #5 (patch) were merged at 16:12:57, 16:13:00 and 16:13:
   - Could also use a guard, e.g. stage older versions under a non-`latest` tag, or have the PR comment warn when a newer version is staged.
 - **Reject:** after rejecting 0.2.1 in the npmjs.com UI, it's gone from `pnpm stage list` and isn't public. Not tested: whether 0.2.1 can be staged again. The page says it's used up.
 - **Still staged:**
-  - 0.1.1 is the expiry check (look again 2026-11-18 and 2026-11-25).
+  - 0.1.1 is the expiry check. Staged 2026-11-11 16:08 UTC. Still staged on 2026-11-18 at ~09:00 UTC (6 days 17 h). Next check 2026-11-25.
   - 0.2.2–0.2.4 were left on purpose.
